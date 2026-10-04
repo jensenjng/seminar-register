@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seminar Register</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#16a34a">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --text: #1c2430;
+    --muted: #667085;
+    --border: #dfe3ea;
+    --accent: #2457d6;
+    --accent-text: #ffffff;
+    --ok: #16a34a;
+    --ok-bg: #e7f6ec;
+    --danger: #c0392b;
+    --row-hover: #f7f9fc;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12161c;
+      --surface: #1b212a;
+      --text: #e7eaf0;
+      --muted: #98a2b3;
+      --border: #2c3542;
+      --accent: #6b93ff;
+      --accent-text: #0b1220;
+      --ok: #34d17a;
+      --ok-bg: #16301f;
+      --danger: #ff7a6b;
+      --row-hover: #212935;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 13px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  [hidden] { display: none !important; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .grow { flex: 1 1 200px; }
+  .spacer { flex: 1; }
+  label.field { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  input[type=text], input[type=date], input[type=time], input[type=search], select {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 10px;
+    min-width: 0;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  button {
+    font: inherit;
+    cursor: pointer;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 8px 12px;
+  }
+  button:hover { background: var(--row-hover); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { filter: brightness(1.08); }
+  button.danger { color: var(--danger); }
+  button.small { padding: 4px 9px; font-size: 13px; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* Top bar + tabs */
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .tabs { display: flex; gap: 4px; background: var(--border); padding: 3px; border-radius: 9px; }
+  .tabs button { border: none; background: transparent; padding: 6px 14px; border-radius: 7px; color: var(--muted); font-weight: 600; }
+  .tabs button[aria-selected=true] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+
+  /* Tables */
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; user-select: none; }
+  th.sortable { cursor: pointer; }
+  th.sortable:hover { color: var(--text); }
+  tbody tr:hover { background: var(--row-hover); }
+  td.num { font-variant-numeric: tabular-nums; }
+  td.actions, th.actions { text-align: right; }
+  th.center, td.center { text-align: center; width: 90px; }
+  td.title-cell { white-space: normal; }
+  .empty { text-align: center; color: var(--muted); padding: 28px 8px; white-space: normal; }
+
+  /* Schedule */
+  .term-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .term-head h3 { margin: 0; font-size: 17px; }
+  .term-head .muted { font-size: 13px; color: var(--muted); }
+  .weeks { display: inline-flex; gap: 1px; font-family: ui-monospace, Consolas, monospace; }
+  .wk {
+    min-width: 22px; padding: 2px 0; text-align: center; border-radius: 5px;
+    border: 1px solid transparent; background: transparent; font: inherit; font-size: 13px;
+  }
+  .wk.off { color: var(--muted); }
+  .wk.on:hover { border-color: var(--accent); background: transparent; }
+  .wk.done { background: var(--ok-bg); color: var(--ok); font-weight: 700; }
+
+  /* Register selectors */
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { text-align: left; padding: 8px 12px; border-radius: 9px; display: flex; flex-direction: column; line-height: 1.25; }
+  .pill small { color: var(--muted); font-size: 12px; }
+  .pill[aria-pressed=true] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { min-width: 40px; padding: 6px 10px; text-align: center; position: relative; }
+  .chip[aria-pressed=true] { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  .chip.done::after {
+    content: ""; position: absolute; top: 3px; right: 3px; width: 6px; height: 6px;
+    border-radius: 50%; background: var(--ok);
+  }
+  .subtle { font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  .session-info { font-size: 15px; margin: 0 0 4px; }
+  .session-info strong { font-size: 17px; }
+  .stats { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .stats strong { color: var(--text); }
+  .bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin: 10px 0 16px; }
+  .bar > span { display: block; height: 100%; background: var(--ok); width: 0; transition: width .2s; }
+
+  .check {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: transparent;
+    color: transparent;
+    font-size: 20px; font-weight: 700; line-height: 1;
+    padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .check:hover { border-color: var(--ok); background: var(--ok-bg); }
+  .check[aria-pressed=true] { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .check[aria-pressed=true]:hover { filter: brightness(1.08); }
+
+  .hint { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
+  .io .row + .hint { margin-top: 8px; }
+
+  dialog {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    padding: 20px;
+    width: min(440px, calc(100vw - 32px));
+    max-height: calc(100vh - 32px);
+  }
+  dialog.wide { width: min(600px, calc(100vw - 32px)); }
+  dialog::backdrop { background: rgba(10,14,20,.5); }
+  dialog h3 { margin: 0 0 14px; font-size: 17px; }
+  dialog .fields { display: grid; gap: 12px; margin-bottom: 16px; }
+  dialog .fields input, dialog .fields select { width: 100%; }
+  dialog .three { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; }
+  dialog .buttons { display: flex; justify-content: flex-end; gap: 8px; }
+  dialog fieldset { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px 12px; margin: 0; display: grid; gap: 8px; }
+  dialog legend { font-weight: 600; font-size: 13px; padding: 0 6px; }
+  dialog .chip { min-width: 34px; padding: 4px 6px; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%);
+    background: #1c2430; color: #fff;
+    padding: 10px 16px; border-radius: 8px;
+    max-width: calc(100vw - 32px);
+    font-size: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.3);
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+    z-index: 10;
+  }
+  #toast.show { opacity: 1; }
+  #toast.error { background: #b42318; }
+
+  @media (max-width: 600px) {
+    th.hide-sm, td.hide-sm { display: none; }
+    th, td { padding: 8px 6px; }
+    th { white-space: normal; }
+    #regBody td:nth-child(2) { white-space: normal; }
+    th.center, td.center { width: 56px; }
+    dialog .three { grid-template-columns: 1fr; }
+  }
+  @media print {
+    body { background: #fff; color: #000; }
+    .no-print { display: none !important; }
+    .card { box-shadow: none; border: none; padding: 0; }
+    .check[aria-pressed=true] { background: none; color: #000; border-color: #000; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top no-print">
+    <h1>Seminar Register</h1>
+    <div class="spacer"></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" data-view="register">Register</button>
+      <button role="tab" data-view="schedule">Seminar schedule</button>
+      <button role="tab" data-view="students">Student records</button>
+    </div>
+  </div>
+
+  <!-- ===================== Register ===================== -->
+  <div id="viewRegister">
+    <section class="card no-print" aria-label="Choose session">
+      <p class="subtle">Class</p>
+      <div class="pill-row" id="classPills"></div>
+      <div class="row" style="margin-top:14px; align-items:flex-start">
+        <div>
+          <p class="subtle">Term</p>
+          <div class="chips" id="termChips"></div>
+        </div>
+        <div class="grow">
+          <p class="subtle">Week</p>
+          <div class="chips" id="weekChips"></div>
+        </div>
+      </div>
+      <p class="hint">A green dot on a week means attendance has been recorded for it.</p>
+    </section>
+
+    <section class="card" aria-label="Register">
+      <div id="sessionInfo" class="session-info"></div>
+      <div class="stats" id="stats"></div>
+      <div class="bar" aria-hidden="true"><span id="barFill"></span></div>
+      <div class="row no-print" style="margin-bottom:12px">
+        <input type="search" id="regSearch" class="grow" placeholder="Search by name or number" aria-label="Search students">
+        <button id="clearAllBtn">Clear all</button>
+        <button id="printBtn">Print</button>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="number">Student number <span data-arrow="number"></span></th>
+              <th class="sortable" data-sort="name">Name <span data-arrow="name"></span></th>
+              <th class="center">Present</th>
+              <th class="hide-sm">Attended so far</th>
+            </tr>
+          </thead>
+          <tbody id="regBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card io no-print" aria-label="Attendance import and export">
+      <h2>Attendance records</h2>
+      <div class="row">
+        <button id="exportClassAttBtn">Export this class (all terms)</button>
+        <button id="exportTermAttBtn">Export this class (this term)</button>
+        <button id="exportAllAttBtn">Export all classes</button>
+        <button id="importAttBtn">Import attendance (CSV)</button>
+      </div>
+      <p class="hint">
+        One row per student with <b>Course</b>, <b>Class</b>, <b>Student Number</b> and <b>Name</b>, then one column per session headed like <b>Autumn W3</b>,
+        holding <b>Present</b>, <b>Absent</b> or blank (not recorded). Exports add attended, recorded and percentage columns.
+        On import, rows go to the class named in their Course and Class columns (or to the class selected above if the file has no such columns), and filled-in cells overwrite current marks.
+      </p>
+    </section>
+  </div>
+
+  <!-- ===================== Seminar schedule ===================== -->
+  <div id="viewSchedule" hidden>
+    <section class="card io" aria-label="Schedule tools">
+      <div class="row">
+        <button id="addClassBtn" class="primary">Add class</button>
+        <button id="termDatesBtn">Term dates</button>
+        <span class="spacer"></span>
+        <button id="exportScheduleBtn">Export schedule (CSV)</button>
+        <button id="importScheduleBtn">Import schedule (CSV)</button>
+      </div>
+      <p class="hint">
+        Click a week number to open that session's register. Schedule files have one row per class with <b>Course</b>, <b>Title</b>, <b>Type</b>, <b>Class</b>, <b>Day</b>, <b>Start</b>, <b>End</b>,
+        then a <b>Location</b> and <b>Weeks</b> column for each term (weeks written like <b>2 3 4 5 7 8 9 10 11</b>). Importing updates classes with the same course and class number and adds new ones.
+      </p>
+    </section>
+    <div id="scheduleTerms"></div>
+  </div>
+
+  <!-- ===================== Student records ===================== -->
+  <div id="viewStudents" hidden>
+    <section class="card" aria-label="Add student">
+      <h2>Add student</h2>
+      <form id="addForm" class="row" autocomplete="off">
+        <label class="field" style="width:160px">Student number
+          <input type="text" id="addNumber" required>
+        </label>
+        <label class="field grow">Name
+          <input type="text" id="addName" required>
+        </label>
+        <label class="field" style="min-width:200px">Class
+          <select id="addClass" required></select>
+        </label>
+        <button type="submit" class="primary" style="align-self:flex-end">Add</button>
+      </form>
+    </section>
+
+    <section class="card" aria-label="Students">
+      <div class="row" style="margin-bottom:12px">
+        <input type="search" id="stuSearch" class="grow" placeholder="Search by name or number" aria-label="Search students">
+        <select id="stuFilter" aria-label="Filter by class"></select>
+      </div>
+      <p class="stats" id="stuCount" style="margin:0 0 8px"></p>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="sortable" data-ssort="number">Student number <span data-sarrow="number"></span></th>
+              <th class="sortable" data-ssort="name">Name <span data-sarrow="name"></span></th>
+              <th class="sortable" data-ssort="class">Class <span data-sarrow="class"></span></th>
+              <th class="hide-sm">Attended</th>
+              <th class="actions"></th>
+            </tr>
+          </thead>
+          <tbody id="stuBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card io" aria-label="Student import and export">
+      <h2>Student records</h2>
+      <div class="row">
+        <button id="exportStudentsBtn">Export students (CSV)</button>
+        <button id="importStudentsBtn">Import students (CSV)</button>
+      </div>
+      <p class="hint">
+        Columns: <b>Course</b>, <b>Class</b>, <b>Student Number</b>, <b>Name</b>. The export follows the class filter above.
+        On import, each row goes to the class matching its Course and Class. If the file only has Student Number and Name, choose a class in the filter first and they are added to it.
+        Existing students (same number in the same class) get their names updated.
+      </p>
+    </section>
+  </div>
+
+  <!-- ===================== Backup (all tabs) ===================== -->
+  <section class="card io no-print" id="backupCard" aria-label="Backup">
+    <h2>Backup</h2>
+    <div class="row">
+      <button id="backupBtn">Download full backup</button>
+      <button id="restoreBtn">Restore from backup</button>
+      <span class="spacer"></span>
+      <button id="resetBtn" class="danger">Reset everything</button>
+    </div>
+    <p class="hint">Everything is stored in this browser on this computer only. The backup file (JSON) holds all classes, students and attendance; download one now and then.</p>
+  </section>
+
+  <input type="file" id="fileInput" hidden>
+</div>
+
+<!-- Student dialog -->
+<dialog id="studentDialog">
+  <form method="dialog" id="studentForm">
+    <h3>Edit student</h3>
+    <div class="fields">
+      <label class="field">Student number <input type="text" id="editNumber" required></label>
+      <label class="field">Name <input type="text" id="editName" required></label>
+      <label class="field">Class <select id="editClass"></select></label>
+    </div>
+    <div class="buttons">
+      <button type="button" id="studentCancel">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Class dialog -->
+<dialog id="classDialog" class="wide">
+  <form method="dialog" id="classForm">
+    <h3 id="classDialogTitle">Class</h3>
+    <div class="fields">
+      <div class="three">
+        <label class="field">Course <input type="text" id="clsCourse" required></label>
+        <label class="field">Type <input type="text" id="clsType"></label>
+        <label class="field">Class number <input type="text" id="clsNumber"></label>
+      </div>
+      <label class="field">Title <input type="text" id="clsTitle"></label>
+      <div class="three">
+        <label class="field">Day <select id="clsDay"></select></label>
+        <label class="field">Start <input type="time" id="clsStart" required></label>
+        <label class="field">End <input type="time" id="clsEnd" required></label>
+      </div>
+      <div id="clsTerms" class="fields" style="margin:0"></div>
+    </div>
+    <div class="buttons">
+      <button type="button" id="classDelete" class="danger" style="margin-right:auto">Delete class</button>
+      <button type="button" id="classCancel">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Term dates dialog -->
+<dialog id="termDialog">
+  <form method="dialog" id="termForm">
+    <h3>Term dates</h3>
+    <p class="subtle" style="margin-top:-6px">Enter the Monday of week 1 for each term. Session dates are worked out from these.</p>
+    <div class="fields" id="termFields"></div>
+    <div class="buttons">
+      <button type="button" id="termCancel">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  'use strict';
+
+  const STORE_KEY = 'seminar-register-v2';
+  const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const MAX_WEEK = 11;
+  const $ = id => document.getElementById(id);
+  const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+  // ---------- State ----------
+  // terms:      [{id, name, start}]            start = ISO date of Monday of week 1 (or '')
+  // classes:    [{id, course, title, type, number, day, start, end, terms:{termId:{location, weeks:[...]}}}]
+  // students:   [{id, classId, number, name}]
+  // attendance: {"classId|termId|week": {studentId: true}}   (key exists = session recorded)
+  // ui:         {view, classId, termId, week}
+  let data;   // loaded at the bottom, once every helper exists
+  let regSort = { key: 'name', dir: 1 }, regQuery = '';
+  let stuSort = { key: 'class', dir: 1 }, stuQuery = '', stuFilter = 'all';
+  let editingStudentId = null, editingClassId = null, saveWarned = false;
+
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const akey = (classId, termId, week) => `${classId}|${termId}|${week}`;
+
+  function defaultData() {
+    return {
+      terms: [
+        { id: 'autumn', name: 'Autumn', start: '' },
+        { id: 'winter', name: 'Winter', start: '' },
+        { id: 'spring', name: 'Spring', start: '' }
+      ],
+      classes: [], students: [], attendance: {},
+      ui: { classId: null, termId: 'autumn', week: null }
+    };
+  }
+
+  function valid(d) {
+    return !!d && Array.isArray(d.terms) && d.terms.length > 0 && Array.isArray(d.classes) &&
+      Array.isArray(d.students) && !!d.attendance && typeof d.attendance === 'object';
+  }
+
+  function load() {
+    let d = null;
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) d = JSON.parse(raw);
+    } catch (e) { /* start fresh */ }
+    if (!valid(d)) d = defaultData();
+    d.ui = d.ui || {};
+    d.ui.view = 'register';   // always open on the register
+    return d;
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(data));
+    } catch (e) {
+      if (!saveWarned) {
+        saveWarned = true;
+        toast('Could not save in this browser. Download a backup to keep your data.', true);
+      }
+    }
+  }
+
+  // ---------- Helpers ----------
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  let toastTimer;
+  function toast(msg, isError) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, isError ? 7000 : 4000);
+  }
+
+  const termById = id => data.terms.find(t => t.id === id);
+  const classById = id => data.classes.find(c => c.id === id);
+  const classStudents = classId => data.students.filter(s => s.classId === classId);
+  const classLabel = c => `${c.course}${c.number ? ' · ' + c.type + ' ' + c.number : ''}`;
+  const classWhen = c => `${c.day.slice(0, 3)} ${c.start}–${c.end}`;
+  const isRecorded = (cid, tid, w) => !!data.attendance[akey(cid, tid, w)];
+  const termWeeks = (c, tid) => ((c.terms[tid] || {}).weeks || []).slice().sort((a, b) => a - b);
+  const normNo = v => String(v || '').trim().replace(/^0+(?=\d)/, '').toLowerCase();   // "03" == "3" (Excel drops zeros)
+  const findClass = (course, number) => data.classes.find(c =>
+    c.course.trim().toLowerCase() === String(course || '').trim().toLowerCase() && normNo(c.number) === normNo(number));
+
+  function sortClasses() {
+    data.classes.sort((a, b) =>
+      DAYS.indexOf(a.day) - DAYS.indexOf(b.day) || a.start.localeCompare(b.start) ||
+      collator.compare(a.course, b.course) || collator.compare(a.number, b.number));
+  }
+  const classOrder = id => data.classes.findIndex(c => c.id === id);
+
+  function sessionDate(day, termId, week) {
+    const t = termById(termId);
+    if (!t || !t.start) return null;
+    const [y, m, d] = t.start.split('-').map(Number);
+    return new Date(y, m - 1, d + (week - 1) * 7 + Math.max(0, DAYS.indexOf(day)));
+  }
+  const isoDate = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const longDate = d => d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+
+  function recordSession(cid, tid, w) {
+    const k = akey(cid, tid, w);
+    if (!data.attendance[k]) data.attendance[k] = {};
+    return data.attendance[k];
+  }
+
+  // How many recorded sessions each class has, and how many each student attended.
+  function attendanceCounts() {
+    const recorded = {}, attended = {};
+    for (const [k, rec] of Object.entries(data.attendance)) {
+      const cid = k.split('|')[0];
+      recorded[cid] = (recorded[cid] || 0) + 1;
+      for (const sid of Object.keys(rec)) attended[sid] = (attended[sid] || 0) + 1;
+    }
+    return { recorded, attended };
+  }
+
+  // Make ui.classId / termId / week point at something that exists.
+  function fixSelection() {
+    const ui = data.ui;
+    if (!classById(ui.classId)) ui.classId = data.classes.length ? data.classes[0].id : null;
+    if (!termById(ui.termId)) ui.termId = data.terms[0].id;
+    const c = classById(ui.classId);
+    if (!c) { ui.week = null; return; }
+    const weeks = termWeeks(c, ui.termId);
+    if (!weeks.includes(ui.week)) {
+      ui.week = weeks.length ? (weeks.find(w => !isRecorded(c.id, ui.termId, w)) || weeks[weeks.length - 1]) : null;
+    }
+  }
+
+  // ---------- CSV ----------
+  function toCSV(rows) {
+    const cell = v => {
+      v = v == null ? '' : String(v);
+      return /[",\r\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
+    return rows.map(r => r.map(cell).join(',')).join('\r\n') + '\r\n';
+  }
+
+  function parseCSV(text) {
+    text = text.replace(/^﻿/, '');
+    const first = text.split(/\r?\n/)[0] || '';
+    let delim = ',';
+    const counts = { ',': 0, ';': 0, '\t': 0 };
+    let q = false;
+    for (const ch of first) {
+      if (ch === '"') q = !q;
+      else if (!q && ch in counts) counts[ch]++;
+    }
+    if (counts[';'] > counts[delim]) delim = ';';
+    if (counts['\t'] > counts[delim]) delim = '\t';
+
+    const rows = [];
+    let row = [], field = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (inQ) {
+        if (ch === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false;
+        } else field += ch;
+      } else if (ch === '"') inQ = true;
+      else if (ch === delim) { row.push(field); field = ''; }
+      else if (ch === '\n' || ch === '\r') {
+        if (ch === '\r' && text[i + 1] === '\n') i++;
+        row.push(field); field = ''; rows.push(row); row = [];
+      } else field += ch;
+    }
+    if (field !== '' || row.length) { row.push(field); rows.push(row); }
+    return rows.map(r => r.map(c => c.trim())).filter(r => r.some(c => c !== ''));
+  }
+
+  function downloadFile(filename, content, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  const downloadCSV = (name, rows) => downloadFile(name, '﻿' + toCSV(rows), 'text/csv;charset=utf-8');
+  const safeName = s => String(s).replace(/[^\w\-.]+/g, '_').replace(/^_+|_+$/g, '') || 'file';
+  const classFileTag = c => `${safeName(c.course)}_${safeName(c.number || c.day)}`;
+
+  function pickFile(accept, handler) {
+    const input = $('fileInput');
+    input.accept = accept;
+    input.onchange = async () => {
+      const file = input.files[0];
+      input.value = '';
+      if (!file) return;
+      let text;
+      try { text = await file.text(); } catch (err) { return toast('Could not read that file.', true); }
+      handler(text);
+    };
+    input.click();
+  }
+  const pickCSV = handler => pickFile('.csv,.txt,text/csv', text => {
+    const rows = parseCSV(text);
+    if (rows.length < 2) return toast('That file has no data rows.', true);
+    handler(rows[0], rows.slice(1));
+  });
+
+  // Header column finders
+  const COLS = {
+    number: /^(student\s*(number|no\.?|id|#)|candidate\s*(number|no\.?)|number|id)$/i,
+    name: /^(student\s*)?(full\s*)?name$/i,
+    course: /^(course(\s*code)?|module)$/i,
+    cls: /^(class|class\s*(no\.?|number|#)|group|#)$/i,
+    title: /^(title|course\s*title)$/i,
+    type: /^type$/i,
+    day: /^day$/i,
+    start: /^start(\s*time)?$/i,
+    end: /^end(\s*time)?$/i
+  };
+  const col = (header, key) => header.findIndex(h => COLS[key].test(h));
+
+  // ---------- Rendering ----------
+  function render() {
+    fixSelection();
+    const view = data.ui.view;
+    document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.view === view));
+    $('viewRegister').hidden = view !== 'register';
+    $('viewSchedule').hidden = view !== 'schedule';
+    $('viewStudents').hidden = view !== 'students';
+    $('backupCard').hidden = view === 'register';
+    if (view === 'register') renderRegister();
+    else if (view === 'schedule') renderSchedule();
+    else renderStudents();
+  }
+
+  // ----- Register -----
+  function renderRegister() {
+    const ui = data.ui;
+    const c = classById(ui.classId);
+    $('classPills').innerHTML = data.classes.map(k => `
+      <button class="pill" data-class="${esc(k.id)}" aria-pressed="${k.id === ui.classId}">
+        <span>${esc(classLabel(k))}</span><small>${esc(classWhen(k))}</small>
+      </button>`).join('') || '<span class="hint" style="margin:0">No classes yet. Add one on the Seminar schedule tab.</span>';
+
+    $('termChips').innerHTML = data.terms.map(t =>
+      `<button class="chip" data-term="${esc(t.id)}" aria-pressed="${t.id === ui.termId}">${esc(t.name)}</button>`).join('');
+
+    const weeks = c ? termWeeks(c, ui.termId) : [];
+    $('weekChips').innerHTML = weeks.map(w =>
+      `<button class="chip${isRecorded(c.id, ui.termId, w) ? ' done' : ''}" data-week="${w}" aria-pressed="${w === ui.week}"
+        title="${(d => d ? longDate(d) : 'Week ' + w)(sessionDate(c.day, ui.termId, w))}">${w}</button>`
+    ).join('') || '<span class="hint" style="margin:0">No sessions scheduled this term.</span>';
+
+    const hasSession = !!(c && ui.week);
+    $('clearAllBtn').disabled = !hasSession;
+    ['exportClassAttBtn', 'exportTermAttBtn'].forEach(id => { $(id).disabled = !c; });
+    $('exportTermAttBtn').textContent = `Export this class (${termById(ui.termId).name} term)`;
+
+    if (!c) {
+      $('sessionInfo').textContent = 'No class selected.';
+      $('stats').textContent = '';
+      $('barFill').style.width = '0';
+      $('regBody').innerHTML = '';
+      return;
+    }
+
+    const t = termById(ui.termId);
+    const info = c.terms[ui.termId] || {};
+    const head = `<strong>${esc(c.course)} ${esc(c.type)} ${esc(c.number)}</strong>, ${esc(c.title)}`;
+    if (hasSession) {
+      const d = sessionDate(c.day, ui.termId, ui.week);
+      $('sessionInfo').innerHTML = `${head}<br>${esc(t.name)} Term, week ${ui.week}${d ? ' · ' + esc(longDate(d)) : ''}` +
+        ` · ${esc(c.start)}–${esc(c.end)}${info.location ? ' · ' + esc(info.location) : ''}`;
+    } else {
+      $('sessionInfo').innerHTML = `${head}<br>No session scheduled in the ${esc(t.name)} term.`;
+    }
+
+    // Stats
+    const students = classStudents(c.id);
+    const rec = hasSession ? (data.attendance[akey(c.id, ui.termId, ui.week)] || {}) : {};
+    if (hasSession) {
+      const present = students.filter(s => rec[s.id]).length;
+      const pct = students.length ? Math.round(present / students.length * 100) : 0;
+      $('stats').innerHTML = `<strong>${present}</strong> of <strong>${students.length}</strong> present (${pct}%)`;
+      $('barFill').style.width = pct + '%';
+    } else {
+      $('stats').textContent = `${students.length} students in this class`;
+      $('barFill').style.width = '0';
+    }
+
+    // Table
+    document.querySelectorAll('[data-arrow]').forEach(el => {
+      el.textContent = el.dataset.arrow === regSort.key ? (regSort.dir === 1 ? '▲' : '▼') : '';
+    });
+    const counts = attendanceCounts();
+    const recorded = counts.recorded[c.id] || 0;
+    const list = regVisible();
+    if (!list.length) {
+      $('regBody').innerHTML = `<tr><td colspan="4" class="empty">${students.length
+        ? 'No students match your search.'
+        : 'No students in this class yet. Add or import them on the Student records tab.'}</td></tr>`;
+      return;
+    }
+    $('regBody').innerHTML = list.map(s => {
+      const on = !!rec[s.id];
+      return `<tr data-id="${esc(s.id)}">
+        <td class="num">${esc(s.number)}</td>
+        <td>${esc(s.name)}</td>
+        <td class="center">
+          <button class="check" data-act="toggle" aria-pressed="${on}" ${hasSession ? '' : 'disabled'}
+            aria-label="${on ? 'Present' : 'Absent'}: ${esc(s.name)}" title="${on ? 'Present (click to undo)' : 'Click to mark present'}">✓</button>
+        </td>
+        <td class="hide-sm num">${counts.attended[s.id] || 0} of ${recorded}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function regVisible() {
+    const q = regQuery.trim().toLowerCase();
+    const k = regSort.key;
+    return classStudents(data.ui.classId)
+      .filter(s => !q || s.name.toLowerCase().includes(q) || s.number.toLowerCase().includes(q))
+      .sort((a, b) => regSort.dir * collator.compare(a[k], b[k]) || collator.compare(a.number, b.number));
+  }
+
+  // ----- Schedule -----
+  function renderSchedule() {
+    $('scheduleTerms').innerHTML = data.terms.map(t => {
+      const rows = data.classes.map(c => {
+        const info = c.terms[t.id] || { location: '', weeks: [] };
+        const weeks = Array.from({ length: MAX_WEEK }, (_, i) => i + 1).map(w => {
+          if (!info.weeks.includes(w)) return `<span class="wk off">·</span>`;
+          const done = isRecorded(c.id, t.id, w);
+          const d = sessionDate(c.day, t.id, w);
+          return `<button class="wk on${done ? ' done' : ''}" data-open="${esc(c.id)}|${esc(t.id)}|${w}"
+            title="${done ? 'Recorded. ' : ''}${d ? longDate(d) : 'Week ' + w}">${w}</button>`;
+        }).join('');
+        const recorded = info.weeks.filter(w => isRecorded(c.id, t.id, w)).length;
+        return `<tr>
+          <td class="num">${esc(classWhen(c))}</td>
+          <td>${esc(c.course)}</td><td class="title-cell">${esc(c.title)}</td><td>${esc(c.type)} ${esc(c.number)}</td>
+          <td>${esc(info.location)}</td>
+          <td><span class="weeks">${weeks}</span></td>
+          <td class="num">${classStudents(c.id).length}</td>
+          <td class="num">${recorded} of ${info.weeks.length}</td>
+          <td class="actions"><button class="small" data-editclass="${esc(c.id)}">Edit</button></td>
+        </tr>`;
+      }).join('');
+      const start = sessionDate('Monday', t.id, 1);
+      return `<section class="card">
+        <div class="term-head">
+          <h3>${esc(t.name)} Term</h3>
+          <span class="muted">${start ? 'Week 1 starts ' + esc(longDate(start)) : 'Term dates not set'}</span>
+        </div>
+        <div class="scroll"><table>
+          <thead><tr>
+            <th>When</th><th>Course</th><th>Title</th><th>Group</th>
+            <th>Location</th><th>Weeks</th><th>Students</th><th>Recorded</th><th class="actions"></th>
+          </tr></thead>
+          <tbody>${rows || `<tr><td colspan="9" class="empty">No classes yet. Click "Add class".</td></tr>`}</tbody>
+        </table></div>
+      </section>`;
+    }).join('');
+  }
+
+  // ----- Students -----
+  function classOptions(includeAll) {
+    return (includeAll ? '<option value="all">All classes</option>' : '') +
+      data.classes.map(c => `<option value="${esc(c.id)}">${esc(classLabel(c))} (${esc(classWhen(c))})</option>`).join('');
+  }
+
+  function stuVisible() {
+    const q = stuQuery.trim().toLowerCase();
+    const { key, dir } = stuSort;
+    return data.students
+      .filter(s => stuFilter === 'all' || s.classId === stuFilter)
+      .filter(s => !q || s.name.toLowerCase().includes(q) || s.number.toLowerCase().includes(q))
+      .sort((a, b) => {
+        const byClass = classOrder(a.classId) - classOrder(b.classId);
+        const primary = key === 'class' ? byClass : collator.compare(a[key], b[key]);
+        return dir * primary || byClass || collator.compare(a.name, b.name);
+      });
+  }
+
+  function renderStudents() {
+    if (stuFilter !== 'all' && !classById(stuFilter)) stuFilter = 'all';
+    const addSel = $('addClass');
+    const keep = addSel.value || data.ui.classId;
+    addSel.innerHTML = classOptions(false);
+    if (classById(keep)) addSel.value = keep;
+    $('addForm').querySelectorAll('input,select,button').forEach(el => { el.disabled = !data.classes.length; });
+
+    $('stuFilter').innerHTML = classOptions(true);
+    $('stuFilter').value = stuFilter;
+
+    document.querySelectorAll('[data-sarrow]').forEach(el => {
+      el.textContent = el.dataset.sarrow === stuSort.key ? (stuSort.dir === 1 ? '▲' : '▼') : '';
+    });
+
+    const counts = attendanceCounts();
+    const list = stuVisible();
+    const inScope = stuFilter === 'all' ? data.students.length : classStudents(stuFilter).length;
+    $('stuCount').textContent = `${list.length === inScope ? inScope : list.length + ' of ' + inScope} student${inScope === 1 ? '' : 's'}`;
+    if (!list.length) {
+      $('stuBody').innerHTML = `<tr><td colspan="5" class="empty">${inScope ? 'No students match your search.' : 'No students yet. Add one above or import a CSV file below.'}</td></tr>`;
+      return;
+    }
+    $('stuBody').innerHTML = list.map(s => {
+      const c = classById(s.classId);
+      return `<tr data-id="${esc(s.id)}">
+        <td class="num">${esc(s.number)}</td>
+        <td>${esc(s.name)}</td>
+        <td>${c ? esc(classLabel(c)) : '?'}</td>
+        <td class="hide-sm num">${counts.attended[s.id] || 0} of ${counts.recorded[s.classId] || 0}</td>
+        <td class="actions">
+          <button class="small" data-act="edit">Edit</button>
+          <button class="small danger" data-act="remove">Remove</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ---------- Navigation ----------
+  document.querySelector('.tabs').addEventListener('click', e => {
+    const b = e.target.closest('button[data-view]');
+    if (!b) return;
+    data.ui.view = b.dataset.view;
+    save(); render();
+  });
+
+  // ---------- Register events ----------
+  $('classPills').addEventListener('click', e => {
+    const b = e.target.closest('[data-class]');
+    if (!b) return;
+    data.ui.classId = b.dataset.class;
+    regQuery = ''; $('regSearch').value = '';
+    save(); render();
+  });
+  $('termChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-term]');
+    if (!b) return;
+    data.ui.termId = b.dataset.term; data.ui.week = null;
+    save(); render();
+  });
+  $('weekChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-week]');
+    if (!b) return;
+    data.ui.week = Number(b.dataset.week);
+    save(); render();
+  });
+
+  $('regBody').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act=toggle]');
+    if (!btn) return;
+    const ui = data.ui;
+    if (!ui.week) return;
+    const id = btn.closest('tr').dataset.id;
+    const rec = recordSession(ui.classId, ui.termId, ui.week);
+    if (rec[id]) delete rec[id]; else rec[id] = true;
+    save(); renderRegister();
+    const again = $('regBody').querySelector(`tr[data-id="${CSS.escape(id)}"] .check`);
+    if (again) again.focus();
+  });
+
+  $('regSearch').addEventListener('input', e => { regQuery = e.target.value; renderRegister(); });
+  document.querySelectorAll('th[data-sort]').forEach(th => th.addEventListener('click', () => {
+    const key = th.dataset.sort;
+    regSort = regSort.key === key ? { key, dir: -regSort.dir } : { key, dir: 1 };
+    renderRegister();
+  }));
+
+  $('clearAllBtn').addEventListener('click', () => {
+    const ui = data.ui;
+    if (!ui.week) return;
+    const list = regVisible();
+    const rec = data.attendance[akey(ui.classId, ui.termId, ui.week)] || {};
+    if (list.some(s => rec[s.id]) &&
+        !confirm(`Clear attendance for ${list.length === classStudents(ui.classId).length ? 'all students' : 'the students shown'} in this session?`)) return;
+    // The session stays "recorded", so a session where nobody came can still be logged.
+    const r = recordSession(ui.classId, ui.termId, ui.week);
+    list.forEach(s => { delete r[s.id]; });
+    save(); renderRegister();
+  });
+  $('printBtn').addEventListener('click', () => window.print());
+
+  // ---------- Schedule events ----------
+  $('scheduleTerms').addEventListener('click', e => {
+    const open = e.target.closest('[data-open]');
+    if (open) {
+      const [cid, tid, w] = open.dataset.open.split('|');
+      Object.assign(data.ui, { classId: cid, termId: tid, week: Number(w), view: 'register' });
+      regQuery = ''; $('regSearch').value = '';
+      save(); render();
+      window.scrollTo(0, 0);
+      return;
+    }
+    const edit = e.target.closest('[data-editclass]');
+    if (edit) openClassDialog(classById(edit.dataset.editclass));
+  });
+
+  function weekChipsHtml(selected) {
+    return Array.from({ length: MAX_WEEK }, (_, i) => i + 1).map(w =>
+      `<button type="button" class="chip" data-w="${w}" aria-pressed="${selected.includes(w)}">${w}</button>`).join('');
+  }
+
+  function openClassDialog(c) {
+    editingClassId = c ? c.id : null;
+    $('classDialogTitle').textContent = c ? 'Edit class' : 'Add class';
+    $('classDelete').hidden = !c;
+    $('clsCourse').value = c ? c.course : '';
+    $('clsType').value = c ? c.type : 'Class';
+    $('clsNumber').value = c ? c.number : '';
+    $('clsTitle').value = c ? c.title : '';
+    $('clsDay').innerHTML = DAYS.map(d => `<option>${d}</option>`).join('');
+    $('clsDay').value = c ? c.day : 'Friday';
+    $('clsStart').value = c ? c.start : '09:00';
+    $('clsEnd').value = c ? c.end : '10:00';
+    $('clsTerms').innerHTML = data.terms.map(t => {
+      const info = (c && c.terms[t.id]) || { location: '', weeks: [] };
+      return `<fieldset data-term="${esc(t.id)}">
+        <legend>${esc(t.name)} Term</legend>
+        <label class="field">Location <input type="text" data-loc value="${esc(info.location)}"></label>
+        <div class="chips">${weekChipsHtml(info.weeks)}</div>
+      </fieldset>`;
+    }).join('');
+    $('classDialog').showModal();
+    $('clsCourse').focus();
+  }
+  $('addClassBtn').addEventListener('click', () => openClassDialog(null));
+  $('classCancel').addEventListener('click', () => $('classDialog').close());
+  $('clsTerms').addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true');
+  });
+
+  $('classForm').addEventListener('submit', e => {
+    const terms = {};
+    $('clsTerms').querySelectorAll('fieldset').forEach(fs => {
+      terms[fs.dataset.term] = {
+        location: fs.querySelector('[data-loc]').value.trim(),
+        weeks: [...fs.querySelectorAll('.chip[aria-pressed=true]')].map(b => Number(b.dataset.w))
+      };
+    });
+    const fields = {
+      course: $('clsCourse').value.trim(), type: $('clsType').value.trim() || 'Class',
+      number: $('clsNumber').value.trim(), title: $('clsTitle').value.trim(),
+      day: $('clsDay').value, start: $('clsStart').value, end: $('clsEnd').value, terms
+    };
+    const clash = findClass(fields.course, fields.number);
+    if (clash && clash.id !== editingClassId) {
+      e.preventDefault();
+      toast(`${fields.course} class ${fields.number} already exists.`, true);
+      return;
+    }
+    if (editingClassId) {
+      Object.assign(classById(editingClassId), fields);
+    } else {
+      const c = { id: uid(), ...fields };
+      data.classes.push(c);
+      data.ui.classId = c.id;
+    }
+    sortClasses();
+    save(); render();
+  });
+
+  $('classDelete').addEventListener('click', () => {
+    const c = classById(editingClassId);
+    if (!c) return;
+    const n = classStudents(c.id).length;
+    if (!confirm(`Delete ${classLabel(c)} with its ${n} student(s) and all of their attendance records? This cannot be undone.`)) return;
+    data.classes = data.classes.filter(x => x.id !== c.id);
+    data.students = data.students.filter(s => s.classId !== c.id);
+    Object.keys(data.attendance).forEach(k => { if (k.startsWith(c.id + '|')) delete data.attendance[k]; });
+    $('classDialog').close();
+    save(); render();
+  });
+
+  $('termDatesBtn').addEventListener('click', () => {
+    $('termFields').innerHTML = data.terms.map(t =>
+      `<label class="field">${esc(t.name)} Term, Monday of week 1 <input type="date" data-term="${esc(t.id)}" value="${esc(t.start)}"></label>`).join('');
+    $('termDialog').showModal();
+  });
+  $('termCancel').addEventListener('click', () => $('termDialog').close());
+  $('termForm').addEventListener('submit', () => {
+    let snapped = false;
+    $('termFields').querySelectorAll('input').forEach(inp => {
+      let v = inp.value;
+      if (v) {
+        const [y, m, d] = v.split('-').map(Number);
+        const dt = new Date(y, m - 1, d);
+        const back = (dt.getDay() + 6) % 7;      // days since Monday
+        if (back) { dt.setDate(dt.getDate() - back); snapped = true; }
+        v = isoDate(dt);
+      }
+      termById(inp.dataset.term).start = v;
+    });
+    save(); render();
+    if (snapped) toast("A date that wasn't a Monday was moved back to that week's Monday.");
+  });
+
+  // ---------- Student events ----------
+  const findInClass = (classId, number) => {
+    const n = number.trim().toLowerCase();
+    return data.students.find(s => s.classId === classId && s.number.toLowerCase() === n);
+  };
+
+  $('addForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const classId = $('addClass').value;
+    const number = $('addNumber').value.trim();
+    const name = $('addName').value.trim();
+    if (!classById(classId) || !number || !name) return;
+    if (findInClass(classId, number)) {
+      toast(`Student number ${number} is already in that class.`, true);
+      $('addNumber').select();
+      return;
+    }
+    data.students.push({ id: uid(), classId, number, name });
+    save();
+    $('addNumber').value = ''; $('addName').value = '';
+    renderStudents();
+    $('addNumber').focus();
+    toast(`Added ${name} to ${classLabel(classById(classId))}.`);
+  });
+
+  $('stuSearch').addEventListener('input', e => { stuQuery = e.target.value; renderStudents(); });
+  $('stuFilter').addEventListener('change', e => {
+    stuFilter = e.target.value;
+    if (stuFilter !== 'all') $('addClass').value = stuFilter;
+    renderStudents();
+  });
+  document.querySelectorAll('th[data-ssort]').forEach(th => th.addEventListener('click', () => {
+    const key = th.dataset.ssort;
+    stuSort = stuSort.key === key ? { key, dir: -stuSort.dir } : { key, dir: 1 };
+    renderStudents();
+  }));
+
+  $('stuBody').addEventListener('click', e => {
+    const btn = e.target.closest('button[data-act]');
+    if (!btn) return;
+    const id = btn.closest('tr').dataset.id;
+    const student = data.students.find(s => s.id === id);
+    if (!student) return;
+    if (btn.dataset.act === 'edit') {
+      editingStudentId = id;
+      $('editNumber').value = student.number;
+      $('editName').value = student.name;
+      $('editClass').innerHTML = classOptions(false);
+      $('editClass').value = student.classId;
+      $('studentDialog').showModal();
+      $('editName').focus();
+    } else if (btn.dataset.act === 'remove') {
+      if (!confirm(`Remove ${student.name} (${student.number})? Their attendance marks are removed too.`)) return;
+      data.students = data.students.filter(s => s.id !== id);
+      Object.values(data.attendance).forEach(rec => { delete rec[id]; });
+      save(); render();
+    }
+  });
+
+  $('studentForm').addEventListener('submit', e => {
+    const number = $('editNumber').value.trim();
+    const name = $('editName').value.trim();
+    const classId = $('editClass').value;
+    const clash = findInClass(classId, number);
+    if (clash && clash.id !== editingStudentId) {
+      e.preventDefault();
+      toast(`Student number ${number} already belongs to ${clash.name} in that class.`, true);
+      return;
+    }
+    const s = data.students.find(x => x.id === editingStudentId);
+    if (!s) return;
+    if (s.classId !== classId) {
+      const marks = Object.values(data.attendance).filter(rec => rec[s.id]).length;
+      if (marks && !confirm(`Moving ${s.name} to another class removes their ${marks} attendance mark(s) in the current class. Continue?`)) {
+        e.preventDefault();
+        return;
+      }
+      Object.values(data.attendance).forEach(rec => { delete rec[s.id]; });
+    }
+    Object.assign(s, { number, name, classId });
+    save(); render();
+  });
+  $('studentCancel').addEventListener('click', () => $('studentDialog').close());
+
+  // ---------- Import / export: students ----------
+  function upsertStudent(classId, number, name) {
+    number = (number || '').trim(); name = (name || '').trim();
+    if (!number) return { result: null };
+    let st = findInClass(classId, number);
+    if (st) {
+      if (name && st.name !== name) { st.name = name; return { result: 'updated', st }; }
+      return { result: 'same', st };
+    }
+    st = { id: uid(), classId, number, name: name || number };
+    data.students.push(st);
+    return { result: 'added', st };
+  }
+
+  $('exportStudentsBtn').addEventListener('click', () => {
+    const list = stuVisible();
+    if (!list.length) return toast('There are no students to export.', true);
+    const rows = [['Course', 'Class', 'Student Number', 'Name']];
+    list.forEach(s => {
+      const c = classById(s.classId);
+      rows.push([c ? c.course : '', c ? c.number : '', s.number, s.name]);
+    });
+    const c = classById(stuFilter);
+    downloadCSV(c ? `students_${classFileTag(c)}.csv` : 'students_all_classes.csv', rows);
+  });
+
+  $('importStudentsBtn').addEventListener('click', () => pickCSV((header, body) => {
+    let iNum = col(header, 'number'), iName = col(header, 'name');
+    const iCourse = col(header, 'course'), iCls = col(header, 'cls');
+    const byColumns = iCourse >= 0 && iCls >= 0;
+    if (iNum < 0 || iName < 0) {
+      if (iNum >= 0 || iName >= 0 || byColumns) return toast('The file needs both a "Student Number" and a "Name" column.', true);
+      iNum = 0; iName = 1;            // no header row: number, name
+      body.unshift(header);
+    }
+    const fallback = classById(stuFilter);
+    if (!byColumns && !fallback) {
+      return toast('This file has no Course and Class columns. Choose a class in the filter first, then import again.', true);
+    }
+    let added = 0, updated = 0, skipped = 0;
+    const unknown = new Set();
+    for (const r of body) {
+      const c = byColumns ? findClass(r[iCourse], r[iCls]) : fallback;
+      if (!c) { unknown.add(`${r[iCourse]} ${r[iCls]}`); skipped++; continue; }
+      const { result } = upsertStudent(c.id, r[iNum], r[iName]);
+      if (result === 'added') added++; else if (result === 'updated') updated++; else if (result === null) skipped++;
+    }
+    save(); render();
+    let msg = `Students imported: ${added} added, ${updated} updated`;
+    if (skipped) msg += `, ${skipped} skipped`;
+    if (unknown.size) msg += ` (unknown class: ${[...unknown].slice(0, 3).join(', ')}${unknown.size > 3 ? '…' : ''})`;
+    toast(msg + '.', unknown.size > 0);
+  }));
+
+  // ---------- Import / export: schedule ----------
+  const weeksText = ws => ws.slice().sort((a, b) => a - b).join(' ');
+  function parseWeeks(v) {
+    const out = new Set();
+    String(v || '').split(/[,;\s]+/).forEach(tok => {
+      const m = tok.match(/^(\d{1,2})(?:-(\d{1,2}))?$/);
+      if (!m) return;
+      const a = Number(m[1]), b = Number(m[2] || m[1]);
+      for (let w = Math.min(a, b); w <= Math.max(a, b); w++) if (w >= 1 && w <= MAX_WEEK) out.add(w);
+    });
+    return [...out].sort((a, b) => a - b);
+  }
+  function normTime(v) {
+    const m = String(v || '').match(/^(\d{1,2})[:.](\d{2})/);
+    return m ? `${m[1].padStart(2, '0')}:${m[2]}` : '';
+  }
+  const normDay = v => DAYS.find(d => d.slice(0, 3).toLowerCase() === String(v || '').trim().slice(0, 3).toLowerCase());
+
+  $('exportScheduleBtn').addEventListener('click', () => {
+    if (!data.classes.length) return toast('There are no classes to export.', true);
+    const header = ['Course', 'Title', 'Type', 'Class', 'Day', 'Start', 'End'];
+    data.terms.forEach(t => header.push(`${t.name} Location`, `${t.name} Weeks`));
+    const rows = [header];
+    data.classes.forEach(c => {
+      const r = [c.course, c.title, c.type, c.number, c.day, c.start, c.end];
+      data.terms.forEach(t => {
+        const info = c.terms[t.id] || { location: '', weeks: [] };
+        r.push(info.location, weeksText(info.weeks));
+      });
+      rows.push(r);
+    });
+    downloadCSV('seminar_schedule.csv', rows);
+  });
+
+  $('importScheduleBtn').addEventListener('click', () => pickCSV((header, body) => {
+    const idx = {};
+    ['course', 'cls', 'title', 'type', 'day', 'start', 'end'].forEach(k => { idx[k] = col(header, k); });
+    if (idx.course < 0) return toast('The schedule file needs a "Course" column.', true);
+    const termCols = data.terms.map(t => ({
+      id: t.id,
+      loc: header.findIndex(h => h.toLowerCase() === `${t.name} location`.toLowerCase()),
+      weeks: header.findIndex(h => h.toLowerCase() === `${t.name} weeks`.toLowerCase())
+    }));
+    const get = (r, k) => (idx[k] >= 0 ? (r[idx[k]] || '').trim() : '');
+
+    let added = 0, updated = 0, skipped = 0;
+    for (const r of body) {
+      const course = get(r, 'course');
+      if (!course) { skipped++; continue; }
+      let c = findClass(course, get(r, 'cls'));
+      const isNew = !c;
+      if (isNew) {
+        c = { id: uid(), course, number: get(r, 'cls'), title: '', type: 'Class', day: 'Monday', start: '09:00', end: '10:00', terms: {} };
+      }
+      if (get(r, 'title')) c.title = get(r, 'title');
+      if (get(r, 'type')) c.type = get(r, 'type');
+      if (normDay(get(r, 'day'))) c.day = normDay(get(r, 'day'));
+      if (normTime(get(r, 'start'))) c.start = normTime(get(r, 'start'));
+      if (normTime(get(r, 'end'))) c.end = normTime(get(r, 'end'));
+      termCols.forEach(tc => {
+        const info = c.terms[tc.id] || (c.terms[tc.id] = { location: '', weeks: [] });
+        if (tc.loc >= 0) info.location = (r[tc.loc] || '').trim();
+        if (tc.weeks >= 0) info.weeks = parseWeeks(r[tc.weeks]);
+      });
+      if (isNew) { data.classes.push(c); added++; } else updated++;
+    }
+    sortClasses();
+    save(); render();
+    toast(`Schedule imported: ${added} class(es) added, ${updated} updated${skipped ? `, ${skipped} row(s) skipped` : ''}.`);
+  }));
+
+  // ---------- Import / export: attendance ----------
+  // Columns for every scheduled session of the given classes, in term/week order.
+  function sessionColumns(classes, onlyTermId, withDates) {
+    const cols = [];
+    data.terms.forEach(t => {
+      if (onlyTermId && t.id !== onlyTermId) return;
+      const weeks = new Set();
+      classes.forEach(c => termWeeks(c, t.id).forEach(w => weeks.add(w)));
+      [...weeks].sort((a, b) => a - b).forEach(w => {
+        const d = withDates ? sessionDate(classes[0].day, t.id, w) : null;
+        cols.push({ termId: t.id, week: w, label: `${t.name} W${w}${d ? ' (' + isoDate(d) + ')' : ''}` });
+      });
+    });
+    return cols;
+  }
+
+  function exportAttendance(classes, onlyTermId, filename) {
+    const students = data.students.filter(s => classes.some(c => c.id === s.classId));
+    if (!students.length) return toast('There are no students to report on.', true);
+    const cols = sessionColumns(classes, onlyTermId, classes.length === 1);
+    if (!cols.length) return toast('No sessions are scheduled for this selection.', true);
+    const rows = [['Course', 'Class', 'Student Number', 'Name', ...cols.map(x => x.label), 'Sessions attended', 'Sessions recorded', 'Attendance %']];
+    students
+      .sort((a, b) => classOrder(a.classId) - classOrder(b.classId) || collator.compare(a.name, b.name))
+      .forEach(s => {
+        const c = classById(s.classId);
+        let attended = 0, recorded = 0;
+        const cells = cols.map(x => {
+          const rec = data.attendance[akey(c.id, x.termId, x.week)];
+          if (!rec) return '';
+          recorded++;
+          if (rec[s.id]) { attended++; return 'Present'; }
+          return 'Absent';
+        });
+        rows.push([c.course, c.number, s.number, s.name, ...cells, attended, recorded,
+          recorded ? Math.round(attended / recorded * 100) + '%' : '']);
+      });
+    downloadCSV(filename, rows);
+  }
+
+  $('exportClassAttBtn').addEventListener('click', () => {
+    const c = classById(data.ui.classId);
+    exportAttendance([c], null, `attendance_${classFileTag(c)}.csv`);
+  });
+  $('exportTermAttBtn').addEventListener('click', () => {
+    const c = classById(data.ui.classId);
+    const t = termById(data.ui.termId);
+    exportAttendance([c], t.id, `attendance_${classFileTag(c)}_${safeName(t.name)}.csv`);
+  });
+  $('exportAllAttBtn').addEventListener('click', () => {
+    if (!data.classes.length) return toast('There are no classes yet.', true);
+    exportAttendance(data.classes, null, 'attendance_all_classes.csv');
+  });
+
+  const PRESENT_RE = /^(present|p|y|yes|1|true|x|✓|✔|attended)$/i;
+  const SESSION_RE = /^(.+?)\s+W(?:eek\s*)?(\d{1,2})\b/i;
+
+  $('importAttBtn').addEventListener('click', () => pickCSV((header, body) => {
+    const iNum = col(header, 'number'), iName = col(header, 'name');
+    const iCourse = col(header, 'course'), iCls = col(header, 'cls');
+    if (iNum < 0) return toast('No "Student Number" column found in the header row.', true);
+    const byColumns = iCourse >= 0 && iCls >= 0;
+    const fallback = classById(data.ui.classId);
+    if (!byColumns && !fallback) return toast('No class selected to import into.', true);
+
+    const cols = [];
+    header.forEach((h, i) => {
+      const m = h.match(SESSION_RE);
+      if (!m) return;
+      const term = data.terms.find(t => t.name.toLowerCase() === m[1].toLowerCase() || t.id === m[1].toLowerCase());
+      const week = Number(m[2]);
+      if (term && week >= 1 && week <= MAX_WEEK) cols.push({ index: i, termId: term.id, week });
+    });
+    if (!cols.length) return toast('No session columns found. Expected headers like "Autumn W3".', true);
+
+    const target = byColumns ? 'the classes named in the file' : classLabel(fallback);
+    if (!confirm(`Import attendance for ${body.length} row(s) and ${cols.length} session column(s) into ${target}?\nFilled-in cells overwrite current marks.`)) return;
+
+    let added = 0, skipped = 0, scheduled = 0, marks = 0;
+    const unknown = new Set();
+    for (const r of body) {
+      const c = byColumns ? findClass(r[iCourse], r[iCls]) : fallback;
+      if (!c) { unknown.add(`${r[iCourse]} ${r[iCls]}`); skipped++; continue; }
+      const { result, st } = upsertStudent(c.id, r[iNum], iName >= 0 ? r[iName] : '');
+      if (result === null) { skipped++; continue; }
+      if (result === 'added') added++;
+      cols.forEach(x => {
+        const v = (r[x.index] || '').trim();
+        if (v === '') return;
+        const info = c.terms[x.termId] || (c.terms[x.termId] = { location: '', weeks: [] });
+        if (!info.weeks.includes(x.week)) { info.weeks.push(x.week); scheduled++; }   // keep the data visible
+        const rec = recordSession(c.id, x.termId, x.week);
+        if (PRESENT_RE.test(v)) rec[st.id] = true; else delete rec[st.id];
+        marks++;
+      });
+    }
+    save(); render();
+    let msg = `Attendance imported: ${marks} mark(s), ${added} new student(s)`;
+    if (scheduled) msg += `, ${scheduled} week(s) added to the schedule`;
+    if (skipped) msg += `, ${skipped} row(s) skipped`;
+    if (unknown.size) msg += ` (unknown class: ${[...unknown].slice(0, 3).join(', ')}${unknown.size > 3 ? '…' : ''})`;
+    toast(msg + '.', unknown.size > 0);
+  }));
+
+  // ---------- Backup ----------
+  $('backupBtn').addEventListener('click', () => {
+    downloadFile(`seminar-register-backup-${isoDate(new Date())}.json`, JSON.stringify(data, null, 2), 'application/json');
+  });
+  $('restoreBtn').addEventListener('click', () => pickFile('.json,application/json', text => {
+    let d;
+    try { d = JSON.parse(text); } catch (e) { return toast('That is not a valid backup file.', true); }
+    if (!valid(d)) return toast('That file is not a Seminar Register backup.', true);
+    if (!confirm(`Replace everything in this browser with the backup (${d.classes.length} classes, ${d.students.length} students)?`)) return;
+    d.ui = Object.assign({}, d.ui, { view: data.ui.view });
+    data = d;
+    sortClasses();
+    save(); render();
+    toast('Backup restored.');
+  }));
+  $('resetBtn').addEventListener('click', () => {
+    if (!confirm('Delete ALL classes, students and attendance from this browser and start again with an empty schedule? Download a backup first if you need a copy.')) return;
+    if (!confirm('This cannot be undone. Reset everything?')) return;
+    data = defaultData();
+    data.ui.view = 'register';
+    save(); render();
+    toast('Reset.');
+  });
+
+  // ---------- Init ----------
+  data = load();
+  sortClasses();
+  render();
+
+  // Installable app: offline support, and ask the browser not to clear saved data.
+  // (Service workers only run over http/https, so this is skipped when opened as a local file.)
+  if (location.protocol.startsWith('http')) {
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>

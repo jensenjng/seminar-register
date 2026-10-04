@@ -1,0 +1,9 @@
+# Allowlist: only the app files are ever published.
+# Everything else in this folder (CSV exports, backups, notes) stays private.
+*
+!.gitignore
+!student_register.html
+!manifest.webmanifest
+!sw.js
+!icons/
+!icons/*.png
