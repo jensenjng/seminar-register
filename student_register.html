@@ -247,7 +247,6 @@
       <div class="bar" aria-hidden="true"><span id="barFill"></span></div>
       <div class="row no-print" style="margin-bottom:12px">
         <input type="search" id="regSearch" class="grow" placeholder="Search by name or number" aria-label="Search students">
-        <button id="clearAllBtn">Clear all</button>
         <button id="printBtn">Print</button>
       </div>
       <div class="scroll">
@@ -678,7 +677,6 @@
     ).join('') || '<span class="hint" style="margin:0">No sessions scheduled this term.</span>';
 
     const hasSession = !!(c && ui.week);
-    $('clearAllBtn').disabled = !hasSession;
     ['exportClassAttBtn', 'exportTermAttBtn'].forEach(id => { $(id).disabled = !c; });
     $('exportTermAttBtn').textContent = `Export this class (${termById(ui.termId).name} term)`;
 
@@ -895,18 +893,6 @@
     renderRegister();
   }));
 
-  $('clearAllBtn').addEventListener('click', () => {
-    const ui = data.ui;
-    if (!ui.week) return;
-    const list = regVisible();
-    const rec = data.attendance[akey(ui.classId, ui.termId, ui.week)] || {};
-    if (list.some(s => rec[s.id]) &&
-        !confirm(`Clear attendance for ${list.length === classStudents(ui.classId).length ? 'all students' : 'the students shown'} in this session?`)) return;
-    // The session stays "recorded", so a session where nobody came can still be logged.
-    const r = recordSession(ui.classId, ui.termId, ui.week);
-    list.forEach(s => { delete r[s.id]; });
-    save(); renderRegister();
-  });
   $('printBtn').addEventListener('click', () => window.print());
 
   // ---------- Schedule events ----------
